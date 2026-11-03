@@ -119,3 +119,5 @@ Everything stays on your machine. The MCP server and CLI make no network calls. 
 ## Status
 
 Version 0.9.0. I use it every day on my own projects. The Claude Code and Codex limit detection has been tested against sample transcripts; the Hermes path has been tested against real logs.
+
+Multi-agent writing works today: several agents read and write the same `.grc/` state through one MCP server, with leases, revision checks and owned-path scoping keeping their writes from colliding. The local-AI conflict management on top of that (the audit → implement → review loop that isolates each agent in a Git worktree and only integrates a reviewed patch when it cherry-picks cleanly) is in progress and still being hardened.
