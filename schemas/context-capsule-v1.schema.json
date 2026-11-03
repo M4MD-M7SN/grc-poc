@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://grc.local/schemas/context-capsule-v1.schema.json",
+  "title": "GRC Context Capsule v1",
+  "type": "object",
+  "required": ["schema", "generated_at", "source_fingerprint", "source_hashes", "freshness", "project", "state", "task_counts", "tasks", "review_queue", "briefing", "integrity"],
+  "properties": {
+    "schema": {"const": "grc.context-capsule/v1"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "focus": {"type": ["string", "null"]},
+    "max_bytes": {"type": "integer", "minimum": 2000},
+    "source_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_hashes": {"type": "object", "additionalProperties": {"type": "string", "pattern": "^[a-f0-9]{64}$"}},
+    "freshness": {
+      "type": "object",
+      "required": ["projection_fingerprint", "repository_scan_current", "changed_sources"],
+      "properties": {
+        "projection_fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "git_head": {"type": "string"},
+        "scan_head": {"type": "string"},
+        "repository_scan_current": {"type": "boolean"},
+        "previous_fingerprint": {"type": ["string", "null"]},
+        "changed_sources": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      },
+      "additionalProperties": true
+    },
+    "project": {"type": "object"},
+    "state": {"type": "object"},
+    "task_counts": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+    "tasks": {"type": "array", "items": {"type": "object"}},
+    "review_queue": {"type": "array", "items": {"type": "object"}},
+    "briefing": {"type": "string"},
+    "truncated": {"type": "boolean"},
+    "integrity": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  },
+  "additionalProperties": true
+}

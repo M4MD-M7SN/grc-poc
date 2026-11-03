@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All Projects · GRC</title>
+<style>
+:root {
+  --bg: #f6f5f1; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1d9;
+  --accent: #2f6f5e; --accent-soft: #e2efe9; --warn: #a15c07; --warn-soft: #fbefdc;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141513; --card: #1d1f1c; --ink: #ecebe6; --muted: #9c9b94; --line: #2e302c;
+    --accent: #6cc3a7; --accent-soft: #1f342d; --warn: #e8a64a; --warn-soft: #3a2c17; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141513; --card: #1d1f1c; --ink: #ecebe6; --muted: #9c9b94; --line: #2e302c;
+  --accent: #6cc3a7; --accent-soft: #1f342d; --warn: #e8a64a; --warn-soft: #3a2c17; --shadow: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 28px 16px 64px; }
+h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -.01em; }
+.sub { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+.grid { display: grid; align-items: start; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+a.card { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); transition: border-color .15s; }
+a.card:hover { border-color: var(--accent); }
+.top { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+h2 { margin: 0; font-size: 18px; }
+.goal { margin: 2px 0 0; color: var(--muted); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ring { --p: 0; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--line) 0); }
+.ring div { width: 42px; height: 42px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.row { margin-top: 10px; font-size: 14px; }
+.row b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; }
+.next { background: var(--accent-soft); border-radius: 8px; padding: 6px 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { font-size: 12px; padding: 1px 9px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--muted); }
+.chip.alert { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.foot { margin-top: 12px; font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const D = /*GRC_DATA*/null;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+function ago(ts) {
+  if (!ts) return "";
+  const s = (Date.now() - new Date(ts)) / 1000;
+  if (isNaN(s)) return "";
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return Math.round(s / 86400) + " d ago";
+}
+function card(p) {
+  const c = p.counts || {};
+  const chips = [
+    c.doing ? `${c.doing} in progress` : "", c.todo ? `${c.todo} to do` : "", c.done ? `${c.done} done` : "",
+    p.uncommitted ? `${p.uncommitted} uncommitted` : "",
+  ].filter(Boolean).map(t => `<span class="chip">${esc(t)}</span>`).join("")
+    + (p.alerts || []).map(a => `<span class="chip alert">${esc(a)}</span>`).join("");
+  return `<a class="card" href="${esc(encodeURI("file://" + p.dashboard))}">
+    <div class="top"><div><h2>${esc(p.name)}</h2><p class="goal">${esc(p.goal)}</p></div>
+      <div class="ring" style="--p:${p.overall}"><div>${p.overall}%</div></div></div>
+    ${p.now ? `<div class="row"><b>Now</b>${esc(p.now)}</div>` : ""}
+    ${p.next ? `<div class="row next"><b>Next</b>${esc(p.next)}</div>` : ""}
+    ${chips ? `<div class="chips">${chips}</div>` : ""}
+    <div class="foot"><span>${esc(p.last_agent ? "Last: " + p.last_agent : "")}</span><span>${esc(ago(p.updated))}</span></div>
+  </a>`;
+}
+const list = (D && D.projects) || [];
+document.getElementById("app").innerHTML = `
+  <h1>All projects</h1>
+  <p class="sub">${list.length} project${list.length === 1 ? "" : "s"} · most recently active first · click one to open its dashboard</p>
+  ${list.length ? `<div class="grid">${list.map(card).join("")}</div>` : `<p class="empty">No projects yet. Drop a folder on GRC's sidebar.</p>`}`;
+</script>
+</body>
+</html>

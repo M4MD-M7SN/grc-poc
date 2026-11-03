@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://grc.local/schemas/task-workflow-v1.schema.json",
+  "title": "GRC Audited Task Workflow v1",
+  "type": "object",
+  "required": ["id", "title", "status"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^T[0-9]+$"},
+    "title": {"type": "string", "minLength": 1},
+    "status": {"enum": ["todo", "doing", "review", "done", "blocked"]},
+    "revision": {"type": "integer", "minimum": 0},
+    "position": {"type": "integer", "minimum": 1},
+    "parent_goal": {"type": "string"},
+    "purpose": {"type": "string"},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "outputs": {"type": "array", "items": {"type": "string"}},
+    "owned_paths": {"type": "array", "items": {"type": "string"}},
+    "forbidden_paths": {"type": "array", "items": {"type": "string"}},
+    "dependencies": {"type": "array", "items": {"type": "string", "pattern": "^T[0-9]+$"}, "uniqueItems": true},
+    "interface_contract": {"type": "string"},
+    "acceptance_criteria": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "verification_commands": {
+      "type": "array",
+      "items": {
+        "type": "array", "minItems": 1,
+        "items": {"type": "string", "minLength": 1}
+      }
+    },
+    "source_strategy": {"enum": ["build", "reuse", "research"]},
+    "time_limit_seconds": {"type": "integer", "minimum": 1},
+    "integration_order": {"type": "integer", "minimum": 1},
+    "planning": {
+      "type": "object",
+      "properties": {
+        "project_lead": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["project_lead", "created_at"],
+      "additionalProperties": false
+    },
+    "audit": {
+      "type": "object",
+      "required": ["auditor", "fingerprint", "evidence"],
+      "properties": {
+        "auditor": {"type": "string", "minLength": 1},
+        "fingerprint": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "line", "message"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "line": {"type": "integer", "minimum": 1},
+              "message": {"type": "string", "minLength": 1}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "claim": {
+      "type": ["object", "null"],
+      "properties": {
+        "agent": {"type": "string"},
+        "run_id": {"type": "string"},
+        "lease_token": {"type": "string", "minLength": 16},
+        "lease_expires_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["agent", "lease_token", "lease_expires_at"]
+    },
+    "implementation": {
+      "type": "object",
+      "properties": {
+        "agent": {"type": "string"},
+        "base_sha": {"type": "string"},
+        "head_sha": {"type": "string"},
+        "patch_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "files": {"type": "array", "items": {"type": "string"}},
+        "tests": {"type": "array", "items": {"type": "object"}}
+      },
+      "required": ["agent", "base_sha", "head_sha", "patch_sha256"]
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "status": {"enum": ["accepted", "rejected"]},
+        "reviewer": {"type": "string"},
+        "tier": {"const": "superior"},
+        "findings": {"type": "string"}
+      },
+      "required": ["status", "reviewer", "tier"]
+    }
+  },
+  "additionalProperties": true
+}

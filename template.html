@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!--GRC_TITLE--></title>
+<style>
+:root {
+  --bg: #f6f5f1; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6a64; --line: #e3e1d9;
+  --accent: #2f6f5e; --accent-soft: #e2efe9; --warn: #a15c07; --warn-soft: #fbefdc;
+  --bad: #a3322a; --bad-soft: #f8e3e1; --todo: #8a8880; --todo-soft: #efeee9;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
+  --t-code: #3b6fb6; --t-doc: #8a5cc2; --t-data: #a8800f; --t-other: #9a998f; --t-context: #c93d68;
+  --t-concept: #2f8f6e; --t-task: #c4502c; --t-agent: #1b8fa8; --t-stage: #7461e8; --t-folder: #b4b2a8; --t-project: #1d1d1b; --t-area: #7461e8; --t-capability: #1b8fa8; --t-operation: #2f8f6e;
+  --g-bg: #fbfaf7; --g-node: #9a9890; --g-line: rgba(40,38,30,.16); --g-accent: #7461e8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141513; --card: #1d1f1c; --ink: #ecebe6; --muted: #9c9b94; --line: #2e302c;
+    --accent: #6cc3a7; --accent-soft: #1f342d; --warn: #e8a64a; --warn-soft: #3a2c17;
+    --bad: #ef8a80; --bad-soft: #3b201e; --todo: #9c9b94; --todo-soft: #262824;
+    --shadow: none;
+    --t-code: #7aa7e8; --t-doc: #b893e6; --t-data: #d9b54a; --t-other: #8d8c85; --t-context: #f07aa0;
+    --t-concept: #6cc3a7; --t-task: #f08a62; --t-agent: #5cc6dd; --t-stage: #a395ff; --t-folder: #5d5f59; --t-project: #ecebe6; --t-area: #a395ff; --t-capability: #5cc6dd; --t-operation: #6cc3a7;
+    --g-bg: #191a18; --g-node: #b3b2ac; --g-line: rgba(255,255,255,.14); --g-accent: #a395ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141513; --card: #1d1f1c; --ink: #ecebe6; --muted: #9c9b94; --line: #2e302c;
+  --accent: #6cc3a7; --accent-soft: #1f342d; --warn: #e8a64a; --warn-soft: #3a2c17;
+  --bad: #ef8a80; --bad-soft: #3b201e; --todo: #9c9b94; --todo-soft: #262824;
+  --shadow: none;
+  --t-code: #7aa7e8; --t-doc: #b893e6; --t-data: #d9b54a; --t-other: #8d8c85; --t-context: #f07aa0;
+  --t-concept: #6cc3a7; --t-task: #f08a62; --t-agent: #5cc6dd; --t-stage: #a395ff; --t-folder: #5d5f59; --t-project: #ecebe6; --t-area: #a395ff; --t-capability: #5cc6dd; --t-operation: #6cc3a7;
+    --g-bg: #191a18; --g-node: #b3b2ac; --g-line: rgba(255,255,255,.14); --g-accent: #a395ff;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+}
+a { color: var(--accent); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px 64px; }
+nav {
+  position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; gap: 4px; align-items: center; padding-top: 10px; padding-bottom: 10px; overflow-x: auto; }
+nav a { text-decoration: none; color: var(--muted); padding: 4px 10px; border-radius: 999px; white-space: nowrap; font-size: 14px; }
+nav a:hover { background: var(--card); color: var(--ink); }
+nav .brand { font-weight: 700; color: var(--ink); margin-right: 8px; }
+nav button { margin-left: auto; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 3px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+header { padding: 32px 0 8px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -.01em; }
+.goal { margin: 0; color: var(--muted); max-width: 640px; font-size: 16px; }
+.meta { margin-top: 10px; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.ring { --p: 0; width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center;
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--line) 0); }
+.ring div { width: 82px; height: 82px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; text-align: center; line-height: 1.1; }
+.ring b { font-size: 24px; } .ring small { font-size: 11px; color: var(--muted); }
+section { margin-top: 36px; }
+h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+.resume { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.resume .card h3 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.resume .card p { margin: 0; }
+.resume .card.next { border-color: var(--accent); background: var(--accent-soft); }
+.resume .card.blocked.has { border-color: var(--warn); background: var(--warn-soft); }
+.flow { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 1fr); gap: 28px; overflow-x: auto; padding: 4px 2px 8px; }
+.stage { position: relative; }
+.stage:not(:last-child)::after { content: "→"; position: absolute; right: -22px; top: 14px; color: var(--muted); font-size: 18px; }
+.stage .card { height: 100%; padding: 14px 16px; }
+.stage .num { font-size: 12px; color: var(--muted); }
+.stage h3 { margin: 2px 0 4px; font-size: 16px; }
+.stage .desc { margin: 0 0 10px; color: var(--muted); font-size: 13px; }
+.stage ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.stage li { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.loop { margin-top: 12px; padding: 12px 16px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 14px; }
+.tag { font-size: 11px; padding: 1px 8px; border-radius: 999px; white-space: nowrap; height: fit-content; font-weight: 600; }
+.tag.done, .tag.built { background: var(--accent-soft); color: var(--accent); }
+.tag.doing, .tag.partial { background: var(--warn-soft); color: var(--warn); }
+.tag.todo, .tag.planned { background: var(--todo-soft); color: var(--todo); }
+.tag.blocked { background: var(--bad-soft); color: var(--bad); }
+.filters { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.filters button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); cursor: pointer; }
+.filters button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tasks { display: grid; gap: 10px; }
+.task summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr 150px; gap: 16px; align-items: center; }
+.task summary::-webkit-details-marker { display: none; }
+.task .title { font-weight: 600; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.task .id { color: var(--muted); font-weight: 400; font-size: 13px; font-variant-numeric: tabular-nums; }
+.task .who { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.bar { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.pct { font-size: 12px; color: var(--muted); text-align: right; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.task .body { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; }
+.task .body ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.task .body li::before { content: "○  "; color: var(--muted); }
+.task .body li.done { color: var(--muted); text-decoration: line-through; }
+.task .body li.done::before { content: "●  "; color: var(--accent); text-decoration: none; display: inline-block; }
+.task .body p { margin: 8px 0 0; color: var(--muted); }
+.evidence { margin-top: 10px; padding: 9px 11px; border-left: 3px solid var(--line); background: color-mix(in srgb, var(--card), var(--accent) 4%); }
+.evidence b { color: var(--ink); }
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timeline .day { font-size: 13px; font-weight: 600; color: var(--muted); margin: 16px 0 6px; }
+.timeline li.ev { display: grid; grid-template-columns: 56px auto 1fr; gap: 10px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.timeline time { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.agent { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--todo-soft); color: var(--ink); white-space: nowrap; }
+.agent::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--c, var(--muted)); margin-right: 6px; vertical-align: 1px; }
+.sha { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); }
+.guide { display: grid; gap: 10px; }
+.guide details summary { cursor: pointer; list-style: none; }
+.guide details summary::-webkit-details-marker { display: none; }
+.guide h3 { margin: 0; font-size: 17px; display: flex; justify-content: space-between; gap: 12px; }
+.guide h3::after { content: "+"; color: var(--muted); font-weight: 400; }
+.guide details[open] h3::after { content: "−"; }
+.guide .short { margin: 4px 0 0; color: var(--muted); }
+.guide .long { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.guide .long p:first-child { margin-top: 0; }
+.guide table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.guide th, .guide td { text-align: left; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.guide th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.guide .tablewrap { overflow-x: auto; }
+.guide code, .resume code { font-family: ui-monospace, Menlo, monospace; font-size: .9em; background: var(--todo-soft); padding: 1px 5px; border-radius: 5px; }
+.callout { background: var(--accent-soft); border-radius: 10px; padding: 10px 14px; margin: 10px 0; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { padding: 14px 16px; }
+.tile .k { font-size: 12px; color: var(--muted); }
+.tile .v { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.tile .s { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.warn { margin-top: 10px; padding: 10px 14px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 14px; }
+.warn b { color: var(--warn); }
+.lst { margin-top: 10px; }
+.lst summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+.lst ul { margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; display: grid; gap: 4px; }
+.lst code { font-family: ui-monospace, Menlo, monospace; color: var(--muted); }
+.map { display: grid; grid-template-columns: 1fr 280px; gap: 12px; }
+.map .stage-wrap { position: relative; padding: 0; overflow: hidden; height: 600px; background: var(--g-bg); }
+.map canvas { display: block; cursor: grab; touch-action: none; }
+.map .panel { font-size: 14px; max-height: 600px; overflow-y: auto; }
+.map .panel h3 { margin: 0 0 2px; font-size: 16px; word-break: break-word; }
+.map .panel .sub { color: var(--muted); font-size: 13px; margin-bottom: 10px; overflow-wrap: anywhere; }
+.map .panel h4 { margin: 12px 0 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.map .panel button.chip { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 2px 9px; margin: 0 4px 4px 0; cursor: pointer; }
+.map-tools { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.map-tools button { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); cursor: pointer; }
+.map-tools button:not(.on) { opacity: .45; }
+.map-tools button.on { color: var(--ink); border-color: var(--muted); }
+.map-tools button .dot, .panel .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 0; }
+.map-tools input { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); margin-left: auto; width: 170px; }
+.mono .map-tools .dot { background: var(--g-node) !important; }
+.area-legend { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: -2px 0 10px; }
+.area-legend > span { color: var(--muted); font-size: 12px; margin-right: 2px; }
+.area-legend button { font: inherit; font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.area-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.display { position: relative; }
+.display summary { list-style: none; cursor: pointer; font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted); }
+.display summary::-webkit-details-marker { display: none; }
+.display .pop { position: absolute; z-index: 4; top: 30px; left: 0; width: 230px; padding: 12px 14px; display: grid; gap: 10px; font-size: 13px; }
+.display label { display: grid; gap: 4px; color: var(--muted); }
+.display label:first-child { display: flex; gap: 8px; align-items: center; color: var(--ink); }
+.display input[type=range] { width: 100%; accent-color: var(--g-accent); }
+.map-note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+.brief { font-size: 14px; columns: 2 320px; column-gap: 32px; }
+.project-intro { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .85fr); gap: 12px; margin-top: 18px; }
+.project-intro .brief { columns: auto; }
+.feature-list { margin: 0; padding-left: 20px; display: grid; gap: 7px; }
+.feature-list li::marker { color: var(--accent); }
+.actor-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; margin-top: 10px; }
+.actor-card { padding: 10px 12px; }
+.actor-card code { display: block; margin-top: 5px; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+.brief h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 4px; break-after: avoid; }
+.brief h3:first-of-type { margin-top: 0; }
+.brief p { margin: 0 0 6px; } .brief p:first-child { color: var(--muted); font-size: 12px; column-span: all; }
+.brief ul { margin: 0 0 6px; padding-left: 18px; } .brief li { margin: 2px 0; break-inside: avoid; }
+.brief code { font-family: ui-monospace, Menlo, monospace; font-size: .9em; background: var(--todo-soft); padding: 1px 5px; border-radius: 5px; }
+.brief pre { margin: 6px 0 10px; padding: 10px 12px; border-radius: 8px; background: var(--todo-soft); overflow-x: auto; break-inside: avoid; }
+.brief pre code { padding: 0; background: none; white-space: pre; }
+.empty { color: var(--muted); font-style: italic; }
+footer { margin-top: 48px; color: var(--muted); font-size: 13px; }
+@media (max-width: 760px) {
+  header { grid-template-columns: 1fr; }
+  .resume { grid-template-columns: 1fr; }
+  .flow { grid-auto-flow: row; grid-auto-columns: auto; gap: 26px; overflow: visible; }
+  .stage:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -24px; }
+  .task summary { grid-template-columns: 1fr; gap: 8px; }
+  .pct { text-align: left; }
+  .timeline li.ev { grid-template-columns: 48px 1fr; }
+  .timeline li.ev .text { grid-column: 1 / -1; }
+  .map { grid-template-columns: 1fr; }
+  .map .stage-wrap { height: 420px; }
+  .map-tools input { margin-left: 0; width: 100%; }
+  .project-intro { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <span class="brand">GRC</span>
+  <a href="#" id="nav-dashboard">Dashboard</a><a href="#bots" id="nav-bots" hidden>Bots</a><a href="#overview">Overview</a><a href="#resume">Resume here</a><a href="#flow">How it works</a><a href="#todo">To-do</a><a href="#map">Map</a><a href="#health">Health</a><a href="#timeline">Timeline</a><a href="#guide">Guide</a>
+  <button id="theme" type="button" aria-label="Toggle theme">◐ Theme</button>
+</div></nav>
+<div class="wrap" id="app"></div>
+
+<script>
+const D = /*GRC_DATA*/null;
+// "Dashboard" tab: the project's own custom page (.grc/custom-dashboard.html)
+if (D && D.custom_dashboard) document.getElementById("nav-dashboard").href = D.custom_dashboard;
+if (D && D.bots) document.getElementById("nav-bots").hidden = false;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = ts => { const d = new Date(ts); return isNaN(d) ? "" : d.toLocaleDateString(undefined, {weekday:"short", day:"numeric", month:"short", year:"numeric"}); };
+const fmtTime = ts => { const d = new Date(ts); return isNaN(d) ? "" : d.toLocaleTimeString(undefined, {hour:"2-digit", minute:"2-digit"}); };
+const ago = ts => { const s = (Date.now() - new Date(ts)) / 1000; if (isNaN(s)) return "";
+  if (s < 90) return "just now"; if (s < 5400) return Math.round(s/60) + " min ago";
+  if (s < 129600) return Math.round(s/3600) + " h ago"; return Math.round(s/86400) + " days ago"; };
+const hue = s => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+const agent = a => `<span class="agent" style="--c:hsl(${hue(a)} 55% 50%)">${esc(a || "unknown")}</span>`;
+function md(src) {
+  const inline = t => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>").replace(/(^|\W)_([^_]+)_(?=\W|$)/g, "$1<i>$2</i>");
+  let html = "", list = false, code = false;
+  for (const raw of String(src).replace(/<!--[\s\S]*?-->/g, "").split("\n")) {
+    const line = raw.trimEnd(), li = line.match(/^\s*[-*]\s+(.*)/), hd = line.match(/^#{1,4}\s+(.*)/);
+    if (line.trim().startsWith("```")) {
+      if (list) { html += "</ul>"; list = false; }
+      html += code ? "</code></pre>" : "<pre><code>"; code = !code; continue;
+    }
+    if (code) { html += esc(raw) + "\n"; continue; }
+    if (!li && list) { html += "</ul>"; list = false; }
+    if (hd) html += `<h3>${inline(hd[1])}</h3>`;
+    else if (li) { if (!list) { html += "<ul>"; list = true; } html += `<li>${inline(li[1])}</li>`; }
+    else if (line.trim()) html += `<p>${inline(line)}</p>`;
+  }
+  return html + (list ? "</ul>" : "") + (code ? "</code></pre>" : "");
+}
+const STATUS = {done:"Done", doing:"In progress", review:"In review", todo:"To do", blocked:"Blocked"};
+
+function render() {
+  const P = D.project || {}, S = D.state || {}, T = D.tasks || [], E = D.timeline || [];
+  const counts = T.reduce((m, t) => (m[t.status] = (m[t.status] || 0) + 1, m), {});
+  let h = "";
+
+  h += `<header><div>
+    <h1>${esc(P.name)}</h1>
+    <p class="goal">${esc(P.goal)}</p>
+    <div class="meta">
+      <span>Status: <b>${esc(P.status || "active")}</b></span>
+      <span>${counts.done || 0} done · ${counts.doing || 0} in progress · ${counts.review || 0} in review · ${counts.todo || 0} to do${counts.blocked ? " · " + counts.blocked + " blocked" : ""}</span>
+      <span>Dashboard built ${esc(ago(D.built_at))}</span>
+      ${D.context_status ? `<span>Context ${D.context_status.freshness?.repository_scan_current ? 'fresh' : 'scan stale'} · ${D.context_status.bytes} bytes · <code>${esc((D.context_status.fingerprint || '').slice(0, 12))}</code></span>` : ''}
+    </div></div>
+    <div class="ring" style="--p:${D.overall}"><div><span><b>${D.overall}%</b><br><small>overall</small></span></div></div>
+  </header>`;
+
+  const features = Array.isArray(P.features) ? P.features : [];
+  const actors = Array.isArray(D.actors?.actors) ? D.actors.actors : [];
+  if (D.brief || features.length) h += `<section id="overview"><h2>AI-generated project description & features</h2><div class="project-intro">
+    <div class="card brief">${D.brief ? md(D.brief) : '<p class="empty">No AI-generated description yet.</p>'}</div>
+    <div class="card"><h3 style="margin-top:0">Feature set</h3>${features.length ? `<ul class="feature-list">${features.map(item => `<li>${esc(item)}</li>`).join("")}</ul>` : '<p class="empty">No features listed yet.</p>'}</div>
+  </div>${actors.length ? `<h3>Signed identities</h3><div class="actor-strip">${actors.map(actor => `<div class="card actor-card"><b>${esc(actor.name)}</b> <span class="tag ${actor.kind === 'user' ? 'doing' : 'done'}">${esc(actor.kind)}</span><code>${esc(actor.id)}</code><code>${esc(actor.public_key_fingerprint)}</code></div>`).join('')}</div>` : ''}</section>`;
+
+  h += `<section id="resume"><h2>Resume here — if you lost track, read this first</h2><div class="resume">
+    <div class="card"><h3>Where we are</h3><p>${esc(S.now)}</p></div>
+    <div class="card next"><h3>Do this next</h3><p>${esc(S.next)}</p></div>
+    <div class="card blocked ${S.blocked ? "has" : ""}"><h3>Blocked on</h3><p>${S.blocked ? esc(S.blocked) : '<span class="empty">Nothing</span>'}</p></div>
+  </div>
+  ${S.last_agent ? `<div class="meta">Last worked on by ${agent(S.last_agent)} ${S.updated ? "· " + esc(ago(S.updated)) : ""}</div>` : ""}</section>`;
+
+
+  const F = (P.flow || []).map((st, i) => typeof st === "string" ? {title: st} : (st || {title: `Step ${i + 1}`}));
+  if (D.bots) {
+    const B = D.bots, bots = B.bots || [];
+    const tone = b => b.status === "error" || !b.running ? "blocked" : b.status === "armed" || b.status === "watching" || b.status === "observing" ? "done" : "todo";
+    h += `<section id="bots"><h2>Bots — automated workers</h2><div class="meta">${B.supervisor_pid ? "Supervisor running" : "Supervisor stopped"}
+      · ${bots.filter(b => b.running).length} of ${bots.length} running${B.kill_switch ? ' · <span class="tag blocked">kill switch on</span>' : ""}
+      · as of ${esc(ago(B.at))}</div><div class="tiles">` + bots.map(b => `<div class="card tile">
+        <div class="k">${b.kind === "strategy" ? `Strategy bot · Wallet ${esc(b.letter)}` : esc(b.kind) + " bot"}</div>
+        <div class="v" style="font-size:18px">${b.kind === "strategy" ? "Strategy " + esc(b.strategy) : "Alerts"} <span class="tag ${tone(b)}">${esc(b.running ? b.status : "stopped")}</span></div>
+        <div class="s">${esc(b.why || "")}</div>
+        <div class="s">${b.restarts ? `restarted ${b.restarts}× · ` : ""}${b.open_trades ? b.open_trades + " open trades · " : ""}heartbeat ${esc(ago(b.heartbeat) || "—")}</div></div>`).join("") +
+      `</div></section>`;
+  }
+  h += `<section id="flow"><h2>How it works</h2>`;
+  if (F.length) {
+    h += `<div class="flow">` + F.map((st, i) => `<div class="stage"><div class="card">
+      <div class="num">Step ${i + 1}</div><h3>${esc(st.title)}</h3><p class="desc">${esc(st.desc)}</p>
+      <ul>${(st.items || []).map(it => `<li><span>${esc(it.text)}</span>${it.state ? `<span class="tag ${esc(it.state)}">${esc(it.state)}</span>` : ""}</li>`).join("")}</ul>
+    </div></div>`).join("") + `</div>`;
+    if (P.flow_note) h += `<div class="loop">↻ ${esc(P.flow_note)}</div>`;
+  } else h += `<p class="empty">No flow described yet — add stages to .grc/project.json.</p>`;
+  h += `</section>`;
+
+  const TS = D.task_source || {};
+  h += `<section id="todo"><h2>To-do</h2>${TS.format ? `<div class="meta">Task source: <span class="tag ${TS.state === 'ok' ? 'done' : 'blocked'}">${esc(TS.format)}</span> · ${TS.read_only ? 'read-only' : 'write-enabled'} · ${esc(TS.state || 'unknown')}${TS.error ? ` · ${esc(TS.error)}` : ''}</div>` : ''}<div class="filters" role="group" aria-label="Filter tasks">
+    ${["all","doing","review","todo","blocked","done"].map(f => `<button type="button" data-f="${f}" class="${f === "all" ? "on" : ""}">${f === "all" ? "All" : STATUS[f]} ${f === "all" ? T.length : (counts[f] || 0)}</button>`).join("")}
+    </div><div class="tasks">`;
+  h += T.length ? T.map(t => `<details class="card task" data-status="${esc(t.status)}"><summary>
+      <div><div class="title"><span class="id">${esc(t.id)}</span>${esc(t.title)}<span class="tag ${esc(t.status)}">${STATUS[t.status] || esc(t.status)}</span></div>
+      <div class="who">${t.last_agent ? "Last: " + agent(t.last_agent) : ""} ${t.owner ? " · Owner: " + agent(t.owner) : ""}</div></div>
+      <div><div class="bar"><i style="width:${t.percent}%"></i></div><div class="pct">${t.percent}% complete</div></div>
+    </summary><div class="body">
+      ${(t.subtasks || []).length ? `<ul>${t.subtasks.map(s => `<li class="${s.done ? "done" : ""}">${esc(s.text)}${s.agent ? " — " + agent(s.agent) : ""}</li>`).join("")}</ul>` : ""}
+      ${t.notes ? `<p>${esc(t.notes)}</p>` : ""}
+      ${t.claim?.agent ? `<div class="evidence"><b>Claimed by</b> ${agent(t.claim.agent)} · lease until ${esc(t.claim.lease_expires_at || 'unknown')}</div>` : ''}
+      ${(t.audit_evidence || []).length ? `<div class="evidence"><b>Audit evidence</b><ul>${t.audit_evidence.map(e => `<li><code>${esc(e.path)}:${esc(e.line)}</code> — ${esc(e.message)}</li>`).join('')}</ul></div>` : ''}
+      ${t.implementation ? `<div class="evidence"><b>Implementation</b> by ${agent(t.implementation.agent)}${t.implementation.commit ? ` · <code>${esc(t.implementation.commit.slice(0, 12))}</code>` : ''}<br>${esc(t.implementation.summary || '')}${(t.implementation.files || []).length ? `<br>Files: ${t.implementation.files.map(esc).join(', ')}` : ''}${(t.implementation.tests || []).length ? `<br>Tests: ${t.implementation.tests.map(x => esc(typeof x === 'string' ? x : `${x.command} → ${x.exit_code}`)).join(' · ')}` : ''}</div>` : ''}
+      ${t.review ? `<div class="evidence"><b>Review: ${esc(t.review.status || 'pending')}</b>${t.review.reviewer ? ` by ${agent(t.review.reviewer)}` : ''}${t.review.findings ? `<br>${esc(t.review.findings)}` : ''}</div>` : ''}
+    </div></details>`).join("") : `<p class="empty">No tasks yet.</p>`;
+  h += `</div></section>`;
+
+  h += `<section id="map"><h2>Project map — how everything connects</h2><div id="map-root"></div></section>`;
+  h += renderHealth(D.health);
+
+  h += `<section id="timeline"><h2>Timeline — what changed and who did it</h2><div class="card"><ul class="timeline">`;
+  let lastDay = "";
+  for (const e of E) {
+    const day = fmtDate(e.ts);
+    if (day !== lastDay) { h += `<li class="day">${esc(day)}</li>`; lastDay = day; }
+    const trust = e.signature_state === "verified"
+      ? ` <span class="tag done" title="${esc(e.signature_reason || "Signature verified")}">verified · ${esc((e.actor_fingerprint || "").slice(-12))}</span>`
+      : e.signature_state === "tampered"
+        ? ` <span class="tag blocked" title="${esc(e.signature_reason || "Signature invalid")}">tampered</span>`
+        : e.git_signature_state === "G"
+          ? ` <span class="tag done" title="Git commit signature verified">git verified</span>`
+          : e.actor_fingerprint
+            ? ` <span class="tag" title="Identity metadata present; signature not verified">unverified · ${esc(e.actor_fingerprint.slice(-12))}</span>`
+            : "";
+    h += `<li class="ev"><time>${esc(fmtTime(e.ts))}</time>${agent(e.agent)}<span class="text">${e.sha ? `<span class="sha">${esc(e.sha)}</span> ` : ""}${esc(e.text)}${e.task ? ` <span class="id">· ${esc(e.task)}</span>` : ""}${trust}</span></li>`;
+  }
+  if (!E.length) h += `<li class="empty">Nothing recorded yet.</li>`;
+  h += `</ul></div></section>`;
+
+  const G = (P.sections || []).map(g => typeof g === "string" ? {title: g, short: "", html: ""} : (g || {}));
+  if (G.length) {
+    h += `<section id="guide"><h2>Guide — the plain-English version</h2><div class="guide">` +
+      G.map((g, i) => `<details class="card" ${g.open ? "open" : ""}><summary><h3>${esc(g.title)}</h3><p class="short">${esc(g.short)}</p></summary>
+        <div class="long">${g.html || ""}</div></details>`).join("") + `</div></section>`;
+  }
+
+  h += `<footer>Built from <code>${esc(D.root)}/.grc/</code> by <code>grc.py build</code> · ${esc(fmtDate(D.built_at))} ${esc(fmtTime(D.built_at))}</footer>`;
+  document.getElementById("app").innerHTML = h;
+  renderMap(D.graph, document.getElementById("map-root"));
+
+  document.querySelectorAll(".filters button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".filters button").forEach(x => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".task").forEach(t => t.hidden = b.dataset.f !== "all" && t.dataset.status !== b.dataset.f);
+  }));
+}
+
+function renderHealth(H) {
+  if (!H) return "";
+  const langs = Object.entries(H.languages || {}).filter(([l]) => l !== "Other").slice(0, 3).map(([l, n]) => `${l} ${n}`).join(" · ") || "—";
+  const g = H.git || {};
+  let h = `<section id="health"><h2>Health — background checks</h2><div class="tiles">
+    <div class="card tile"><div class="k">Files</div><div class="v">${(H.files || 0).toLocaleString()}${H.truncated ? "+" : ""}</div><div class="s">${(H.lines || 0).toLocaleString()} lines of text</div></div>
+    <div class="card tile"><div class="k">Main languages</div><div class="s" style="font-size:14px;color:var(--ink);margin-top:6px">${esc(langs)}</div></div>
+    <div class="card tile"><div class="k">TODOs left in code</div><div class="v">${(H.todos || []).length}${(H.todos || []).length >= 80 ? "+" : ""}</div><div class="s">notes like TODO / FIXME</div></div>
+    <div class="card tile"><div class="k">Git</div>${g.repo
+      ? `<div class="v">${g.changed || 0} <span style="font-size:13px;font-weight:400;color:var(--muted)">changed · ${g.untracked || 0} new</span></div><div class="s">branch ${esc(g.branch)}${g.last_commit ? " · last: " + esc(ago(g.last_commit.ts)) : " · no commits yet"}</div>`
+      : `<div class="s" style="margin-top:6px">Not a git repo — no history yet</div>`}</div>
+  </div>`;
+  const bad = (H.env_files || []).filter(e => !e.ignored);
+  if (bad.length) h += `<div class="warn"><b>Secrets risk:</b> ${bad.map(e => `<code>${esc(e.path)}</code>`).join(", ")} ${g.repo ? (bad.length > 1 ? "are" : "is") + " not git-ignored and could be committed." : (bad.length > 1 ? "exist" : "exists") + " — add to .gitignore before this becomes a git repo."}</div>`;
+  if ((H.large_files || []).length) h += `<div class="warn"><b>Large files:</b> ${H.large_files.map(f => `${esc(f.path)} (${f.mb} MB)`).join(", ")}</div>`;
+  if (H.truncated) h += `<div class="warn"><b>Partial scan:</b> only the first 3,000 files were checked.</div>`;
+  if ((H.context_files || []).length) h += `<details class="lst card" style="padding:12px 16px"><summary>Context you added (${H.context_files.length})</summary><ul>${H.context_files.map(f => `<li><code>${esc(f)}</code></li>`).join("")}</ul></details>`;
+  if ((H.todos || []).length) h += `<details class="lst card" style="padding:12px 16px"><summary>TODOs found in the code (${H.todos.length}) — candidates for the to-do list</summary><ul>${H.todos.map(t => `<li><code>${esc(t.path)}:${t.line}</code> <span class="tag todo">${esc(t.kind)}</span> ${esc(t.text)}</li>`).join("")}</ul></details>`;
+  return h + `</section>`;
+}
+
+const TYPES = {
+  concept: "Concepts", task: "Tasks", agent: "Agents", stage: "Flow stages", context: "Your context", code: "Code",
+  doc: "Docs", data: "Data", other: "Other files", folder: "Folders", project: "Project",
+  capability: "Software capabilities", operation: "Operational groups", area: "Project-specific areas",
+};
+const REL = {
+  contains: ["Contains", "Inside"], imports: ["Uses code from", "Used by"], links_to: ["Links to", "Linked from"],
+  mentions: ["About these topics", "Appears in"], about: ["About", "Part of these tasks"],
+  worked_on: ["Worked on", "Worked on by"], changed: ["Changed", "Changed by"],
+  flows_to: ["Flows to", "Flows from"], implemented_by: ["Implemented by", "Implements"],
+};
+
+function normalizeCapabilities(value) {
+  const raw = Array.isArray(value) ? value : [], seen = new Set();
+  return raw.flatMap(item => {
+    if (!item || typeof item !== "object" || item.id == null || seen.has(String(item.id))) return [];
+    seen.add(String(item.id));
+    const evidence = Array.isArray(item.evidence) ? [...new Set(item.evidence.map(String))] : [];
+    const count = Number(item.count);
+    return [{
+      ...item, id: String(item.id), name: String(item.name || item.id),
+      present: item.present === true, evidence,
+      count: Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : evidence.length,
+    }];
+  });
+}
+
+function visibleCapabilities(value) {
+  return normalizeCapabilities(value).filter(capability => capability.present);
+}
+
+function normalizeAreas(value) {
+  const rawAreas = Array.isArray(value) ? value : [], seen = new Set();
+  return rawAreas.flatMap((area, index) => {
+    if (!area || typeof area !== "object") return [];
+    const identity = area.id == null ? `missing:${index}` : `id:${String(area.id)}`;
+    if (seen.has(identity)) return [];
+    seen.add(identity);
+    return [{ ...area, id: area.id == null ? `__grc_area_${index}` : area.id }];
+  });
+}
+
+const OPERATIONAL_GROUPS = [
+  {id: "bots", name: "Bots", capability: "bots", pattern: /\bbots?\b/i},
+  {id: "runtime", name: "Runtime", capability: "backend", pattern: /\b(?:server runtime|runtime|daemon|worker|background job)\b/i},
+  {id: "pipelines", name: "Pipelines", capability: "backend", pattern: /\b(?:pipeline|pipelines|ingestion|ingest|etl|stream processing)\b/i},
+  {id: "services", name: "Services", capability: "backend", pattern: /\b(?:backend|api|service|services|operator)\b/i},
+  {id: "interfaces", name: "Interfaces", capability: "frontend", pattern: /\b(?:dashboard|frontend|interface|user interface|web app)\b/i},
+  {id: "contracts", name: "Contracts", capability: "data", pattern: /\b(?:contract|contracts|schema|schemas|ports)\b/i},
+  {id: "datasets", name: "Datasets", capability: "data", pattern: /\b(?:dataset|datasets|data sources?|evidence|records)\b/i},
+  {id: "integrations", name: "Integrations", capability: "tools_integrations", pattern: /\b(?:tool|tools|integration|integrations|connector|adapter|plugin|mcp)\b/i},
+];
+
+function classifyAreaPlacement(area, capabilities) {
+  const available = new Map((capabilities || []).filter(c => c && c.present).map(c => [String(c.id), c]));
+  const files = Array.isArray(area && area.files) ? area.files.map(String) : [];
+  const nameText = String(area && area.name || "");
+  const allText = [nameText, area && area.anchor || "", ...files].join(" ");
+  const operation = OPERATIONAL_GROUPS.find(group => group.pattern.test(nameText))
+    || OPERATIONAL_GROUPS.find(group => group.pattern.test(allText));
+  if (operation && available.has(operation.capability)) {
+    return {capability: operation.capability, operation: operation.id, operationName: operation.name};
+  }
+  const fileSet = new Set(files);
+  let best = null, bestOverlap = 0;
+  available.forEach(capability => {
+    const overlap = (capability.evidence || []).filter(path => fileSet.has(String(path))).length;
+    if (overlap > bestOverlap) { best = capability.id; bestOverlap = overlap; }
+  });
+  return {capability: best, operation: null, operationName: null};
+}
+
+function renderMap(rawGraph, el) {
+  const rawNodes = rawGraph && Array.isArray(rawGraph.nodes) ? rawGraph.nodes : [];
+  if (rawNodes.length < 2) { el.innerHTML = `<p class="empty">Nothing to map yet.</p>`; return; }
+  const ALL_CAPABILITIES = normalizeCapabilities(rawGraph.capabilities);
+  const CAPABILITIES = ALL_CAPABILITIES.filter(capability => capability.present);
+  const AREAS = normalizeAreas(rawGraph.clusters);
+  const baseEdges = Array.isArray(rawGraph.edges) ? rawGraph.edges : [];
+  let G = { ...rawGraph, nodes: rawNodes, edges: baseEdges, clusters: AREAS, capabilities: ALL_CAPABILITIES };
+  const projectNode = rawNodes.find(n => n.type === "project");
+  const usedNodeIds = new Set(rawNodes.map(n => String(n.id)));
+  const areaNodeIds = new Map(), capabilityNodeIds = new Map(), operationNodeIds = new Map();
+  const reserveNodeId = stem => {
+    let id = stem, suffix = 2;
+    while (usedNodeIds.has(id)) id = `${stem}:${suffix++}`;
+    usedNodeIds.add(id);
+    return id;
+  };
+  let architectureMode = false;
+  if ((AREAS.length || CAPABILITIES.length) && projectNode) {
+    const sourceNodes = rawNodes.map(n => ({ ...n }));
+    const sourceFileByPath = new Map(sourceNodes.filter(n => n.path).map(n => [n.path, n]));
+    const areaNodes = AREAS.map((area, index) => {
+      const id = reserveNodeId(`area:${area.id == null ? index : area.id}`);
+      areaNodeIds.set(area, id);
+      return {
+        id, label: area.name, type: "area", cluster: area.id,
+        files: area.size, evidence: "project-area",
+      };
+    });
+    const capabilityNodes = CAPABILITIES.map(capability => {
+      const id = reserveNodeId(`capability:${capability.id}`);
+      capabilityNodeIds.set(capability, id);
+      return {
+        id, label: capability.name, type: "capability", capability: capability.id,
+        files: capability.count, evidence: capability.evidence,
+      };
+    });
+    const placements = new Map(AREAS.map(area => [area, classifyAreaPlacement(area, CAPABILITIES)]));
+    const operationNodes = [];
+    placements.forEach(placement => {
+      if (!placement.capability || !placement.operation) return;
+      const key = `${placement.capability}:${placement.operation}`;
+      if (operationNodeIds.has(key)) return;
+      const id = reserveNodeId(`operation:${key}`);
+      operationNodeIds.set(key, id);
+      operationNodes.push({
+        id, label: placement.operationName, type: "operation",
+        capability: placement.capability, operation: placement.operation,
+        evidence: "operational-area",
+      });
+    });
+    const hierarchyEdges = [];
+    AREAS.forEach(area => {
+      const areaNodeId = areaNodeIds.get(area);
+      const placement = placements.get(area) || {};
+      const capability = CAPABILITIES.find(item => item.id === placement.capability);
+      const operationId = placement.operation
+        ? operationNodeIds.get(`${placement.capability}:${placement.operation}`) : null;
+      const parentId = operationId || (capability && capabilityNodeIds.get(capability)) || projectNode.id;
+      hierarchyEdges.push({ s: parentId, t: areaNodeId, rel: "contains", w: 4, evidence: "operational-area" });
+      sourceNodes.filter(n => n.cluster === area.id && n.type !== "concept").forEach(n =>
+        hierarchyEdges.push({ s: areaNodeId, t: n.id, rel: "contains", w: 2, evidence: "project-area" }));
+    });
+    CAPABILITIES.forEach(capability => {
+      const capabilityNodeId = capabilityNodeIds.get(capability);
+      hierarchyEdges.push({ s: projectNode.id, t: capabilityNodeId, rel: "contains", w: 4, evidence: "capability" });
+      capability.evidence.forEach(path => {
+        const file = sourceFileByPath.get(path);
+        if (file && !file.cluster) hierarchyEdges.push({ s: capabilityNodeId, t: file.id, rel: "implemented_by", w: 2, evidence: "capability" });
+      });
+    });
+    operationNodes.forEach(operation => {
+      const capability = CAPABILITIES.find(item => item.id === operation.capability);
+      if (capability) hierarchyEdges.push({
+        s: capabilityNodeIds.get(capability), t: operation.id,
+        rel: "contains", w: 4, evidence: "operational-area",
+      });
+    });
+    G = {
+      ...G,
+      nodes: sourceNodes.concat(capabilityNodes, operationNodes, areaNodes),
+      edges: baseEdges.concat(hierarchyEdges),
+    };
+    architectureMode = capabilityNodes.length + operationNodes.length + areaNodes.length > 0;
+  }
+  const counts = {}; G.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
+  const detailTypes = ["other", "folder", "concept", "task", "agent", "stage", "context", "code", "doc", "data"];
+  const hidden = architectureMode ? new Set(detailTypes) : new Set(["other"]);
+  if (!architectureMode && G.nodes.length > 150) hidden.add("folder");
+  const S = { colour: AREAS.length ? "area" : CAPABILITIES.length ? "type" : "none", labels: 1, size: 1, spacing: 1 };
+  try { Object.assign(S, JSON.parse(localStorage.getItem("grc-map") || "{}")); } catch (e) {}
+  if (S.colour === true) S.colour = "type"; else if (S.colour === false) S.colour = "none";
+  const areaOf = new Map(AREAS.map((c, i) => [c.id, i]));
+  const HUES = [212, 28, 145, 282, 350, 48, 186, 318, 95, 250, 8, 165];
+  const saveS = () => { try { localStorage.setItem("grc-map", JSON.stringify(S)); } catch (e) {} };
+
+  el.innerHTML = `<div class="map-tools">${Object.keys(TYPES).filter(t => counts[t]).map(t =>
+      `<button type="button" data-t="${t}"><span class="dot" style="background:var(--t-${t})"></span>${TYPES[t]} ${counts[t]}</button>`).join("")}
+      <details class="display"><summary>Display</summary><div class="pop card">
+        <label>Colour <select data-s="colour"><option value="none">None</option><option value="type">By type</option>${AREAS.length ? '<option value="area">By area</option>' : ""}</select></label>
+        <label>Labels <input type="range" data-s="labels" min="0.4" max="2.5" step="0.1"></label>
+        <label>Node size <input type="range" data-s="size" min="0.5" max="2" step="0.1"></label>
+        <label>Spacing <input type="range" data-s="spacing" min="0.5" max="2.5" step="0.1"></label>
+      </div></details>
+      <input type="search" placeholder="Find a file, topic, task…" aria-label="Find in map"></div>
+    ${CAPABILITIES.length ? `<div class="area-legend"><span>Universal capabilities</span>${CAPABILITIES.map((capability, i) =>
+      `<button type="button" data-capability="${i}"><span class="dot" style="background:var(--t-capability)"></span>${esc(capability.name)} · ${capability.count}</button>`).join("")}</div>` : ""}
+    ${AREAS.length ? `<div class="area-legend"><span>Project-specific areas</span>${AREAS.map((a, i) =>
+      `<button type="button" data-area="${i}"><span class="dot" style="background:hsl(${HUES[i % HUES.length]} 55% 46%)"></span>${esc(a.name)} · ${a.size}</button>`).join("")}</div>` : ""}
+    <div class="map"><div class="card stage-wrap"><canvas aria-label="Project map"></canvas></div><div class="card panel"></div></div>
+    <div class="map-note"></div>`;
+  const canvas = el.querySelector("canvas"), ctx = canvas.getContext("2d"), wrap = el.querySelector(".stage-wrap");
+  const panel = el.querySelector(".panel"), note = el.querySelector(".map-note");
+  el.classList.toggle("mono", S.colour !== "type");
+
+  // colours come from CSS tokens so the map follows light/dark
+  let C = {};
+  const readColours = () => {
+    const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+    C = { node: v("--g-node"), line: v("--g-line"), accent: v("--g-accent"), text: v("--ink"), bg: v("--card") };
+    Object.keys(TYPES).forEach(t => C[t] = v("--t-" + t));
+    const dark = parseInt((C.bg.match(/[0-9a-f]{2}/i) || ["ff"])[0], 16) < 128;
+    C.area = HUES.map(h => `hsl(${h} ${dark ? 62 : 55}% ${dark ? 66 : 46}%)`);
+  };
+  readColours();
+
+  const byId = new Map(G.nodes.map(n => [n.id, n]));
+  let N = [], L = [], adj = [], index = new Map(), hubs = new Set();
+  let alpha = 1, alphaTarget = 0, raf = null, autoFit = true;
+  const T = { x: 0, y: 0, k: 1 };
+  let hover = null, selected = null, drag = null;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function visible() {
+    let ns = G.nodes.filter(n => !hidden.has(n.type));
+    let ids = new Set(ns.map(n => n.id));
+    let es = G.edges.filter(e => ids.has(e.s) && ids.has(e.t));
+    const deg = {}; es.forEach(e => { deg[e.s] = (deg[e.s] || 0) + 1; deg[e.t] = (deg[e.t] || 0) + 1; });
+    const keep = new Set(["concept", "task", "agent", "stage", "context", "project", "capability", "operation", "area"]);
+    const LIMIT = 300; let cut = 0;
+    if (ns.length > LIMIT) {
+      const must = ns.filter(n => keep.has(n.type)), rest = ns.filter(n => !keep.has(n.type)).sort((a, b) => (deg[b.id] || 0) - (deg[a.id] || 0));
+      const room = Math.max(0, LIMIT - must.length); cut = rest.length - room;
+      ns = must.concat(rest.slice(0, room)); ids = new Set(ns.map(n => n.id)); es = es.filter(e => ids.has(e.s) && ids.has(e.t));
+    }
+    if (ns.length > 40) ns = ns.filter(n => deg[n.id] || ["task", "agent", "stage", "context", "project", "capability", "operation", "area"].includes(n.type));
+    return { ns, es, cut };
+  }
+
+  function setup() {
+    const old = new Map(N.map(n => [n.id, n]));
+    const V = visible();
+    let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    N = V.ns.map(n => { const o = old.get(n.id), a = rnd() * 6.2832, r = 30 + rnd() * 220;
+      return { ...n, x: o ? o.x : Math.cos(a) * r, y: o ? o.y : Math.sin(a) * r, vx: 0, vy: 0, deg: 0 }; });
+    index = new Map(N.map((n, i) => [n.id, i]));
+    L = V.es.map(e => ({ s: index.get(e.s), t: index.get(e.t) }));
+    adj = N.map(() => new Set());
+    L.forEach(l => { adj[l.s].add(l.t); adj[l.t].add(l.s); N[l.s].deg++; N[l.t].deg++; });
+    note.textContent = (V.cut > 0 ? `Showing the ${N.length} most-connected items (${V.cut} quieter files hidden). ` : "") +
+      "Scroll to zoom · drag the background to move · drag a dot to pull it · double-click to fit.";
+    alpha = 1; autoFit = true;
+    hubs = new Set([...N].sort((a, b) => b.deg - a.deg).slice(0, N.length > 60 ? 10 : N.length).map(n => n.id));
+    const warm = reduce ? 300 : (old.size ? 0 : 120);
+    for (let i = 0; i < warm; i++) tick();
+    if (reduce) alpha = 0;
+    if (!old.size || reduce) fit(true);
+    kick();
+  }
+
+  const radius = n => Math.min(22, (3 + Math.sqrt(n.deg) * 1.3) * S.size) + (["project", "capability", "operation", "area"].includes(n.type) ? 4 : ["concept", "task", "agent", "stage"].includes(n.type) ? 1.5 : 0);
+
+  function tick() {
+    const n = N.length, rep = -110 * S.spacing, dist = 34 * S.spacing;
+    for (let i = 0; i < n; i++) {
+      const a = N[i];
+      for (let j = i + 1; j < n; j++) {
+        const b = N[j]; let dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy;
+        if (d2 > 160000) continue;
+        if (d2 < 1) { dx = Math.random() - .5; dy = Math.random() - .5; d2 = 1; }
+        const f = rep * alpha / d2;
+        a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f;
+      }
+    }
+    for (const l of L) {
+      const a = N[l.s], b = N[l.t];
+      const dx = b.x + b.vx - a.x - a.vx, dy = b.y + b.vy - a.y - a.vy, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const k = (d - dist) / d * alpha / Math.min(a.deg || 1, b.deg || 1);
+      const bias = a.deg / (a.deg + b.deg || 1);
+      b.vx -= dx * k * bias; b.vy -= dy * k * bias; a.vx += dx * k * (1 - bias); a.vy += dy * k * (1 - bias);
+    }
+    for (const p of N) {
+      const gravity = p.type === "project" ? 0.22 : 0.035;
+      p.vx -= p.x * gravity * alpha; p.vy -= p.y * gravity * alpha;
+      if (drag && drag.node === p) { p.vx = p.vy = 0; continue; }
+      p.vx *= 0.6; p.vy *= 0.6; p.x += p.vx; p.y += p.vy;
+    }
+    alpha += (alphaTarget - alpha) * 0.0228;
+  }
+
+  function size() { return { w: wrap.clientWidth, h: wrap.clientHeight }; }
+  function fit(instant) {
+    if (!N.length) return;
+    const { w, h } = size(); let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of N) { x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
+    const k = Math.min(2.2, Math.min(w / (x1 - x0 + 220), h / (y1 - y0 + 90)));
+    const tx = w / 2 - (x0 + x1) / 2 * k, ty = h / 2 - (y0 + y1) / 2 * k, s = instant ? 1 : 0.12;
+    T.k += (k - T.k) * s; T.x += (tx - T.x) * s; T.y += (ty - T.y) * s;
+  }
+
+  function draw() {
+    const { w, h } = size(), dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); canvas.style.width = w + "px"; canvas.style.height = h + "px";
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    ctx.save(); ctx.translate(T.x, T.y); ctx.scale(T.k, T.k);
+    const f = hover ?? selected, near = f != null ? adj[f] : null;
+    const lit = i => f == null || i === f || near.has(i);
+
+    ctx.lineWidth = 1 / T.k;
+    ctx.strokeStyle = C.line; ctx.globalAlpha = f == null ? 1 : 0.35; ctx.beginPath();
+    for (const l of L) if (f == null || (l.s !== f && l.t !== f)) { ctx.moveTo(N[l.s].x, N[l.s].y); ctx.lineTo(N[l.t].x, N[l.t].y); }
+    ctx.stroke();
+    if (f != null) {
+      ctx.globalAlpha = 1; ctx.strokeStyle = C.accent; ctx.lineWidth = 1.6 / T.k; ctx.beginPath();
+      for (const l of L) if (l.s === f || l.t === f) { ctx.moveTo(N[l.s].x, N[l.s].y); ctx.lineTo(N[l.t].x, N[l.t].y); }
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < N.length; i++) {
+      const p = N[i], r = radius(p);
+      ctx.globalAlpha = lit(i) ? 1 : 0.18;
+      ctx.fillStyle = i === f ? C.accent : p.type === "capability" ? C.capability : S.colour === "type" ? C[p.type]
+        : S.colour === "area" && areaOf.has(p.cluster) ? C.area[areaOf.get(p.cluster) % C.area.length] : C.node;
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, 6.2832); ctx.fill();
+    }
+
+    // labels fade in as you zoom, like Obsidian; the focused neighbourhood is always labelled
+    const fade = Math.max(0, Math.min(1, (T.k * S.labels - 0.75) / 0.5));
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    for (let i = 0; i < N.length; i++) {
+      const p = N[i];
+      let a = f != null ? (lit(i) ? 1 : 0) : Math.max(fade, hubs.has(p.id) ? 0.85 : 0);
+      if (a <= 0.02) continue;
+      const fs = Math.max(10, 11.5 / Math.max(T.k, 0.6)) / (f != null && lit(i) ? Math.max(T.k, 1) * 0.85 : 1);
+      ctx.font = `${i === f ? 600 : 400} ${fs}px -apple-system, BlinkMacSystemFont, system-ui, sans-serif`;
+      const label = p.label.length > 34 ? p.label.slice(0, 33) + "…" : p.label, y = p.y + radius(p) + 3 / T.k;
+      ctx.globalAlpha = a; ctx.lineWidth = 3 / T.k; ctx.strokeStyle = C.bg; ctx.lineJoin = "round";
+      ctx.strokeText(label, p.x, y); ctx.fillStyle = C.text; ctx.fillText(label, p.x, y);
+    }
+    // area names float over their group, strongest when zoomed out
+    if (S.colour === "area" && f == null) {
+      const sum = AREAS.map(() => ({ x: 0, y: 0, n: 0 }));
+      for (const p of N) if (areaOf.has(p.cluster)) { const c = sum[areaOf.get(p.cluster)]; c.x += p.x; c.y += p.y; c.n++; }
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      AREAS.forEach((a, i) => {
+        const c = sum[i]; if (c.n < 2) return;
+        ctx.font = `700 ${Math.max(13, 16 / T.k)}px -apple-system, BlinkMacSystemFont, system-ui, sans-serif`;
+        ctx.globalAlpha = 0.95 - fade * 0.6; ctx.lineWidth = 4 / T.k; ctx.strokeStyle = C.bg; ctx.lineJoin = "round";
+        ctx.strokeText(a.name, c.x / c.n, c.y / c.n); ctx.fillStyle = C.area[i % C.area.length]; ctx.fillText(a.name, c.x / c.n, c.y / c.n);
+      });
+    }
+    ctx.restore(); ctx.globalAlpha = 1;
+  }
+
+  function frame() {
+    raf = null;
+    const live = alpha > 0.004 || alphaTarget > 0;
+    if (live) { tick(); if (autoFit) fit(false); }
+    else if (autoFit) { fit(true); autoFit = false; }
+    draw();
+    if (live) raf = requestAnimationFrame(frame);
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
+
+  // interaction
+  const world = e => { const b = canvas.getBoundingClientRect(); return { sx: e.clientX - b.left, sy: e.clientY - b.top, x: (e.clientX - b.left - T.x) / T.k, y: (e.clientY - b.top - T.y) / T.k }; };
+  const hit = p => { let best = null, bd = Infinity;
+    for (let i = 0; i < N.length; i++) { const n = N[i], d = Math.hypot(n.x - p.x, n.y - p.y); if (d < radius(n) + 4 / T.k && d < bd) { best = i; bd = d; } }
+    return best; };
+
+  canvas.addEventListener("pointerdown", e => {
+    const p = world(e), i = hit(p); canvas.setPointerCapture(e.pointerId); autoFit = false;
+    drag = { node: i != null ? N[i] : null, idx: i, sx: p.sx, sy: p.sy, tx: T.x, ty: T.y, moved: false };
+    if (i != null) { alphaTarget = 0.25; kick(); }
+  });
+  canvas.addEventListener("pointermove", e => {
+    const p = world(e);
+    if (drag) {
+      if (Math.abs(p.sx - drag.sx) + Math.abs(p.sy - drag.sy) > 3) drag.moved = true;
+      if (drag.node) { drag.node.x = p.x; drag.node.y = p.y; kick(); }
+      else { T.x = drag.tx + p.sx - drag.sx; T.y = drag.ty + p.sy - drag.sy; canvas.style.cursor = "grabbing"; kick(); }
+      return;
+    }
+    const i = hit(p); canvas.style.cursor = i != null ? "pointer" : "grab";
+    if (i !== hover) { hover = i; kick(); }
+  });
+  canvas.addEventListener("pointerup", () => {
+    if (!drag) return;
+    if (!drag.moved) select(drag.idx != null ? N[drag.idx].id : null);
+    alphaTarget = 0; drag = null; canvas.style.cursor = "grab"; kick();
+  });
+  canvas.addEventListener("pointerleave", () => { if (!drag && hover != null) { hover = null; kick(); } });
+  canvas.addEventListener("wheel", e => {
+    e.preventDefault(); autoFit = false;
+    const p = world(e), k = Math.max(0.08, Math.min(8, T.k * Math.exp(-e.deltaY * 0.0015)));
+    T.x = p.sx - (p.sx - T.x) * k / T.k; T.y = p.sy - (p.sy - T.y) * k / T.k; T.k = k; kick();
+  }, { passive: false });
+  canvas.addEventListener("dblclick", () => { fit(true); kick(); });
+  new ResizeObserver(() => kick()).observe(wrap);
+  new MutationObserver(() => { readColours(); kick(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readColours(); kick(); });
+
+  function neighbours(id) {
+    const out = {};
+    for (const e of G.edges) {
+      let other, dir;
+      if (e.s === id) { other = e.t; dir = 0; } else if (e.t === id) { other = e.s; dir = 1; } else continue;
+      const key = (REL[e.rel] || [e.rel, e.rel])[dir];
+      (out[key] = out[key] || []).push(other);
+    }
+    return out;
+  }
+
+  function select(id, centre) {
+    selected = id != null && index.has(id) ? index.get(id) : null;
+    if (selected != null && centre) { const p = N[selected], { w, h } = size(); autoFit = false; T.x = w / 2 - p.x * T.k; T.y = h / 2 - p.y * T.k; }
+    kick();
+    if (selected == null) {
+      panel.innerHTML = architectureMode
+        ? `<h3>Project architecture</h3><div class="sub">The project is the centre. Universal capabilities branch into operational groups, project-specific areas, and then their implementation files.</div>
+          <p>For example: Backend → Pipelines → Telegram ingestion pipeline, or Backend → Runtime → Server runtime files.</p>
+          <p>Files that belong to an operational area stay behind that area instead of linking straight to the project. Click any hub to inspect its neighbours.</p>`
+        : `<h3>What is this?</h3><div class="sub">A map of this project, drawn from its files, tasks and history.</div>
+          <p>Each dot is a thing — a file, a topic, a task or an AI agent. Each line is a relationship: <i>uses code from</i>, <i>is about</i>, <i>worked on</i>, <i>changed</i>.</p>
+          <p>Hover a dot to light up its neighbours. Click it to list them here.</p>`;
+      return;
+    }
+    const n = byId.get(id), nb = neighbours(id);
+    panel.innerHTML = `<h3><span class="dot" style="background:var(--t-${esc(n.type)})"></span>${esc(n.label)}</h3>
+      <div class="sub">${esc(TYPES[n.type] || n.type)}${n.path ? " · " + esc(n.path) : ""}${n.lines ? " · " + n.lines + " lines" : ""}${n.files ? " · in " + n.files + " files" : ""}${areaOf.has(n.cluster) ? " · area: " + esc(AREAS[areaOf.get(n.cluster)].name) : ""}</div>` +
+      Object.entries(nb).map(([k, ids]) => `<h4>${esc(k)} (${ids.length})</h4>${ids.slice(0, 40).map(o => { const m = byId.get(o);
+        return m ? `<button type="button" class="chip" data-go="${esc(o)}"><span class="dot" style="background:var(--t-${esc(m.type)})"></span>${esc(m.label)}</button>` : ""; }).join("")}${ids.length > 40 ? `<span class="sub"> +${ids.length - 40} more</span>` : ""}`).join("") +
+      `<p><button type="button" class="chip" data-go="">Clear selection</button></p>`;
+  }
+
+  const reveal = id => { const n = byId.get(id); if (n && hidden.has(n.type)) { hidden.delete(n.type); syncButtons(); setup(); } select(id, true); };
+  panel.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) b.dataset.go ? reveal(b.dataset.go) : select(null); });
+
+  const syncButtons = () => el.querySelectorAll(".map-tools button[data-t]").forEach(b => b.classList.toggle("on", !hidden.has(b.dataset.t)));
+  el.querySelectorAll(".map-tools button[data-t]").forEach(b => b.addEventListener("click", () => {
+    hidden.has(b.dataset.t) ? hidden.delete(b.dataset.t) : hidden.add(b.dataset.t); syncButtons(); setup(); }));
+  el.querySelectorAll("[data-capability]").forEach(b => b.addEventListener("click", () => {
+    const capability = CAPABILITIES[Number(b.dataset.capability)]; if (!capability) return;
+    const capabilityNode = byId.get(capabilityNodeIds.get(capability));
+    if (capabilityNode) reveal(capabilityNode.id); else kick();
+  }));
+  el.querySelectorAll("[data-area]").forEach(b => b.addEventListener("click", () => {
+    const area = AREAS[Number(b.dataset.area)]; if (!area) return;
+    S.colour = "area"; saveS();
+    const colour = el.querySelector('[data-s="colour"]'); if (colour) colour.value = "area";
+    const areaNode = byId.get(areaNodeIds.get(area));
+    if (areaNode) reveal(areaNode.id); else kick();
+  }));
+  el.querySelectorAll("[data-s]").forEach(inp => {
+    const k = inp.dataset.s;
+    if (inp.type === "checkbox") inp.checked = S[k]; else inp.value = S[k];
+    inp.addEventListener("input", () => {
+      S[k] = inp.type === "checkbox" ? inp.checked : inp.tagName === "SELECT" ? inp.value : +inp.value; saveS();
+      el.classList.toggle("mono", S.colour !== "type");
+      if (k === "spacing") { alpha = Math.max(alpha, 0.5); autoFit = true; }
+      kick();
+    });
+  });
+  el.querySelector('input[type="search"]').addEventListener("input", e => {
+    const q = e.target.value.trim().toLowerCase(); if (!q) return select(null);
+    const hit = N.find(n => n.label.toLowerCase().includes(q)) || G.nodes.find(n => n.label.toLowerCase().includes(q) || (n.path || "").toLowerCase().includes(q));
+    if (hit) reveal(hit.id);
+  });
+
+  syncButtons(); setup(); select(null);
+}
+
+(function theme() {
+  const root = document.documentElement, btn = document.getElementById("theme");
+  try { const t = localStorage.getItem("grc-theme"); if (t) root.dataset.theme = t; } catch (e) {}
+  btn.addEventListener("click", () => {
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("grc-theme", root.dataset.theme); } catch (e) {}
+  });
+})();
+
+if (D) render(); else document.getElementById("app").innerHTML = '<p class="empty">This is the GRC template. Run grc.py build to fill it.</p>';
+</script>
+</body>
+</html>

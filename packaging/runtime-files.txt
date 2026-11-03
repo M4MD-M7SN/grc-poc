@@ -1,0 +1,16 @@
+# Files required by the GRC CLI, MCP server, and macOS app runtime.
+grc.py
+scan.py
+genie.py
+limits.py
+mcp_server.py
+identity.py
+task_sources.py
+workflow.py
+agent_runner.py
+agent_cli.py
+ollama_local_agent.py
+template.html
+overview.html
+schemas/context-capsule-v1.schema.json
+schemas/task-workflow-v1.schema.json

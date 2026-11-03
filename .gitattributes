@@ -1,0 +1,6 @@
+# Keep release archives clean and portable; the private source repo can still
+# use GRC to track its own shared project state.
+.grc export-ignore
+index.html export-ignore
+build export-ignore
+dist export-ignore
