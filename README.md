@@ -2,6 +2,10 @@
 
 GRC keeps a project's working state inside the repo, so any AI coding agent (or a person) can pick up where the last one stopped.
 
+## The problem it solves
+
+AI coding agents do not remember anything between runs. Each one starts cold, and when one hits its usage limit halfway through a task the next has to re-read the whole repo and guess what was going on. A smarter agent does not fix this, because the gap is state, not intelligence: the context simply was never written down anywhere the next one can read it. GRC solves it by keeping that state inside the repo itself, a small `.grc/` folder holding the current status, the task list, who did what and a handoff note, which every agent reads and writes through one shared MCP server. The record lives with the code, so the next agent or person picks up exactly where the last one stopped instead of starting over.
+
 I use several agents on the same codebase: Claude Code, Codex, a local model through Ollama, and Hermes. Each one starts cold. When one hits its usage limit halfway through a task, the next one has to re-read the whole repo and guess what was going on. GRC fixes that by keeping a small `.grc/` folder with the current status, the task list, who did what, and a handoff note. Every agent reads and writes it through the same MCP server.
 
 It runs on macOS, uses only the Python standard library, and needs no account or cloud service.
